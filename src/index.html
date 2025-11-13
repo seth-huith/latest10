@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Latest10</title>
+<style>
+body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 2rem; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
+.card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 1rem; }
+h2 { margin: 0 0 .5rem 0; font-size: 1.1rem; text-transform: capitalize; }
+ul { list-style: none; padding: 0; margin: 0; }
+li { margin: .5rem 0; }
+a { text-decoration: none; }
+.meta { color: #6b7280; font-size: .85rem; }
+.controls { margin-bottom: 1rem; display: flex; gap: .5rem; }
+input { padding: .5rem; border-radius: 8px; border: 1px solid #e5e7eb; }
+button { padding: .5rem .75rem; border-radius: 8px; border: 1px solid #e5e7eb; background: white; cursor: pointer; }
+</style>
+</head>
+<body>
+<h1>Latest10</h1>
+<div class="controls">
+<input id="subjects" placeholder="subjects (comma-separated)" value="ai,security" />
+<button id="load">Load</button>
+<span class="meta">Tip: set `?subject=ai,security` in the URL.</span>
+</div>
+<div id="root" class="grid"></div>
+<script>
+const params = new URLSearchParams(location.search);
+const initial = params.get('subject') || 'ai,security';
+document.getElementById('subjects').value = initial;
+
+
+async function load() {
+const subjects = document.getElementById('subjects').value.trim();
+if (!subjects) return;
+const res = await fetch(`/api/articles?subject=${encodeURIComponent(subjects)}`);
+const data = await res.json();
+const root = document.getElementById('root');
+root.innerHTML = '';
+for (const [subj, items] of Object.entries(data)) {
+const card = document.createElement('div');
+card.className = 'card';
+const h2 = document.createElement('h2');
+h2.textContent = subj;
+card.appendChild(h2);
+const ul = document.createElement('ul');
+(items || []).forEach(i => {
+const li = document.createElement('li');
+const a = document.createElement('a');
+a.href = i.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+a.textContent = i.title;
+const meta = document.createElement('div');
+meta.className = 'meta';
+meta.textContent = `${new Date(i.publishedAt).toLocaleString()} · ${i.source || ''}`;
+li.appendChild(a); li.appendChild(meta); ul.appendChild(li);
+});
+card.appendChild(ul);
+root.appendChild(card);
+}
+history.replaceState(null, '', `?subject=${encodeURIComponent(subjects)}`);
+}
+
+
+document.getElementById('load').addEventListener('click', load);
+load();
+</script>
+</body>
+</html>

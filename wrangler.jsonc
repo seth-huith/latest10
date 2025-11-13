@@ -44,5 +44,11 @@
 		"crons": [
 			"* * * * *"
 		]
-	}
+	},
+	"kv_namespaces": [
+		{
+			"binding": "ARTICLES",
+			"id": "a328edd284414b3999bd9a0fefadd11a"
+		}
+	]
 }
